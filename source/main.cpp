@@ -7,8 +7,14 @@
 #include <switch.h>
 #include <game.h>
 
-// Game settings
-#define SPEED 5000000000ULL
+////////////////////////
+// Game env settings
+///////////////////////
+
+// Speed in nanoseconds
+// 300 ms  -  300000000
+//   5 sec -  5000000000
+#define SPEED 300000000ULL
 #define LEVEL 1
 #define V_HEIGHT 25
 #define V_WIDTH 50
