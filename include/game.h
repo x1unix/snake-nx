@@ -1,9 +1,10 @@
 #include <stdio.h>
+#include <switch.h>
+
 #define CHR_SNAKE '@'
 #define CHR_FOOD '*'
 #define CHR_FRAME '#'
 #define CHR_EMPTY ' '
-#define clear() printf("\033[H\033[J")
 
 /////////////////////////////////////////////
 // Port of github.com/lowlevelftw/somecode //
@@ -20,7 +21,8 @@ class Game {
 private:
     int height, width, max_size;
     bool status, win;
-    int snake_size, food_x, food_y, snake_x, snake_y, score, speed;
+    int snake_size, food_x, food_y, snake_x, snake_y, score;
+    u64 speed;
     Direction direction;
     Snake *snake_body;
     bool inBoundsOf(int i, int j);
@@ -33,6 +35,6 @@ public:
     void Process();
     void Move();
     void PutFood();
-    void setSpeed(int s);
+    void setSpeed(u64 s);
     void setDirection(Direction dir);
 };

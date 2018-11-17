@@ -8,7 +8,7 @@
 #include <game.h>
 
 // Game settings
-#define SPEED 75
+#define SPEED 5000000000ULL
 #define LEVEL 1
 #define V_HEIGHT 25
 #define V_WIDTH 50
@@ -50,6 +50,7 @@ void onGameFinish(GameState state, int score) {
 // Main program entrypoint
 int main(int argc, char* argv[])
 {
+    bool gameOver = false;
     // This example uses a text console, as a simple way to output text to the screen.
     // If you want to write a software-rendered graphics application,
     //   take a look at the graphics/simplegfx example, which uses the libnx gfx API instead.
@@ -76,15 +77,24 @@ int main(int argc, char* argv[])
         if (kDown & KEY_PLUS)
             break; // break in order to return to hbmenu
         
+        if (gameOver == true) {
+            continue;
+        }
+
         GameState gameState = game.getState();
         if (gameState != PLAYING) {
+            gameOver = true;
             onGameFinish(gameState, game.getScore());
             continue;
         }
 
         Direction d = decodeButtonDirection(kDown);
         game.DrawTable();
-        game.setDirection(d);
+        
+        if (d != NOP) {
+            game.setDirection(d);
+        }
+
         game.Process();
 
         // Update the console, sending a new frame to the display

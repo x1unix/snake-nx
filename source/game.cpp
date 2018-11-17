@@ -1,17 +1,21 @@
 #include <iostream>
 #include <string>
-#include <ctime>
-#include <unistd.h>
 #include "game.h"
+#include <time.h>
+#include <switch.h>
 
 using namespace std;
 
 Game::Game(int vHeight, int vWidth) {
     height = vHeight;
     width = vWidth;
+    status = false;
+    win = false;
+    score = 0;
     snake_x = vHeight / 2;
     snake_y = vWidth / 2;
     max_size = (vHeight - 2) * (vWidth - 2);
+    snake_size = 1;
     snake_body = new Snake[max_size];
     snake_body[0].index_i = snake_x;
     snake_body[0].index_j = snake_y;
@@ -23,25 +27,29 @@ Game::~Game() {
 }
 
 void Game::DrawTable() {
-    clear();
+    consoleClear();
+    std::string frame;
+
     for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
+        for (int j = 0; j < width; j++) {           
             if (!i || i == height - 1 || !j || j == width - 1) {
-                cout << CHR_FRAME;
+                frame.append("#");
             }
             else if (i == food_x && j == food_y) {
-                cout << CHR_FOOD;
+                frame.append("@");
             }
             else if (inBoundsOf(i, j)) {
-                cout << CHR_SNAKE;
+                frame.append("*");
             }
             else {
-                cout << CHR_EMPTY;
+                frame.append(" ");
             }
         }
-        cout << endl;
+        frame.append("\n");
     }
-    cout << "Your current score is: " << score;
+
+    printf(frame.c_str());
+    printf("Your current score is: %d\n", score);
 }
 
 void Game::setDirection(Direction dir) {
@@ -63,7 +71,7 @@ void Game::Process() {
         snake_y++;
         break;
     default:
-        break;
+        return;
     }
 
     Move();
@@ -92,7 +100,7 @@ void Game::Move() {
         snake_body[snake_size].index_i = 0;
         snake_body[snake_size].index_j = 0;
     }
-    usleep(speed);
+    //svcSleepThread(speed);
 }
 
 void Game::PutFood() {
@@ -126,7 +134,7 @@ int Game::getScore() {
     return score;
 }
 
-void Game::setSpeed(int s) {
+void Game::setSpeed(u64 s) {
     speed = s;
 }
 
