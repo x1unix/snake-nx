@@ -12,7 +12,11 @@ map<u64, string> dbg_keys = {
     {KEY_A, "A"},
     {KEY_B, "B"},
     {KEY_X, "X"},
-    {KEY_Y, "Y"}
+    {KEY_Y, "Y"},
+    {KEY_DUP, "UP"},
+    {KEY_DDOWN, "DOWN"},
+    {KEY_DLEFT, "LEFT"},
+    {KEY_DRIGHT, "RIGHT"},
 };
 
 void debugButtonsState(u64 kDown) {
