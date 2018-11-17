@@ -4,6 +4,12 @@
         "event.h": "c",
         "shmem.h": "c",
         "mutex.h": "c",
-        "types.h": "c"
+        "types.h": "c",
+        "iostream": "cpp",
+        "*.tcc": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp",
+        "system_error": "cpp",
+        "array": "cpp"
     }
 }
