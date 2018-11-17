@@ -1,0 +1,12 @@
+{
+    "configurations": [
+        {
+            "name": "current",
+            "includePath": [
+                "/opt/devkitpro/libnx/include"
+            ],
+            "intelliSenseMode": "gcc-x64"
+        }
+    ],
+    "version": 4
+}
