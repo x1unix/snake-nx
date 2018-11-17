@@ -1,15 +1,17 @@
 #include <iostream>
 #include <string>
+#include <ctime>
+#include <unistd.h>
 #include "game.h"
 
 using namespace std;
 
-Game::Game(int wHeight, int wWidth) {
-    height = wHeight;
-    width = wWidth;
-    snake_x = wHeight / 2;
-    snake_y = wWidth / 2;
-    max_size = (wHeight - 2) * (wWidth - 2);
+Game::Game(int vHeight, int vWidth) {
+    height = vHeight;
+    width = vWidth;
+    snake_x = vHeight / 2;
+    snake_y = vWidth / 2;
+    max_size = (vHeight - 2) * (vWidth - 2);
     snake_body = new Snake[max_size];
     snake_body[0].index_i = snake_x;
     snake_body[0].index_j = snake_y;
@@ -25,16 +27,16 @@ void Game::DrawTable() {
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
             if (!i || i == height - 1 || !j || j == width - 1) {
-                cout << frame;
+                cout << CHR_FRAME;
             }
             else if (i == food_x && j == food_y) {
-                cout << food;
+                cout << CHR_FOOD;
             }
-            else if (Check(i, j)) {
-                cout << snake;
+            else if (inBoundsOf(i, j)) {
+                cout << CHR_SNAKE;
             }
             else {
-                cout << " ";
+                cout << CHR_EMPTY;
             }
         }
         cout << endl;
@@ -50,21 +52,21 @@ void Game::Process() {
     switch (direction) {
     case UP:
         snake_x--;
-        Move();
         break;
     case LEFT:
         snake_y--;
-        Move();
         break;
     case DOWN:
         snake_x++;
-        Move();
         break;
     case RIGHT:
         snake_y++;
-        Move();
+        break;
+    default:
         break;
     }
+
+    Move();
 }
 
 void Game::Move() {
@@ -90,7 +92,7 @@ void Game::Move() {
         snake_body[snake_size].index_i = 0;
         snake_body[snake_size].index_j = 0;
     }
-    Sleep(speed);
+    usleep(speed);
 }
 
 void Game::PutFood() {
@@ -99,7 +101,7 @@ void Game::PutFood() {
     food_y = rand() % (width - 2) + 2;
 }
 
-bool Game::InBoundsOf(int i, int j) {
+bool Game::inBoundsOf(int i, int j) {
     for (int k = 0; k < snake_size; k++) {
         if (i == snake_body[k].index_i && j == snake_body[k].index_j) {
             return true;
@@ -108,11 +110,23 @@ bool Game::InBoundsOf(int i, int j) {
     return false;
 }
 
+GameState Game::getState() {
+    if (!status && !win) {
+        return PLAYING;
+    }
+
+    if (status && !win) {
+        return LOST;
+    }
+
+    return WON;
+}
+
 int Game::getScore() {
     return score;
 }
 
-int Game::setSpeed(int s) {
+void Game::setSpeed(int s) {
     speed = s;
 }
 

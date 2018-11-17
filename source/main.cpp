@@ -1,31 +1,50 @@
 // Include the most common headers from the C standard library
 #include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <string.h>
 #include <map>
-
-// Include the main libnx system header, for Switch development
 #include <switch.h>
+#include <game.h>
+
+// Game settings
+#define SPEED 75
+#define LEVEL 1
+#define V_HEIGHT 25
+#define V_WIDTH 50
+
+// Messages
+#define MSG_WIN "Congratulations! You won the game!"
+#define MSG_LOST "YOU LOST!"
+#define MSG_SCORE "\n\nYour score is: %d\nPress '+' to exit."
+
 using namespace std;
 
-map<u64, string> dbg_keys = {
-    {KEY_A, "A"},
-    {KEY_B, "B"},
-    {KEY_X, "X"},
-    {KEY_Y, "Y"},
-    {KEY_DUP, "UP"},
-    {KEY_DDOWN, "DOWN"},
-    {KEY_DLEFT, "LEFT"},
-    {KEY_DRIGHT, "RIGHT"},
+// Button to direction mappings (switch only)
+map<u64, Direction> dbg_keys = {
+    {KEY_DUP, UP},
+    {KEY_DDOWN, DOWN},
+    {KEY_DLEFT, LEFT},
+    {KEY_DRIGHT, RIGHT},
 };
 
-void debugButtonsState(u64 kDown) {
+Direction decodeButtonDirection(u64 kDown) {
     for (auto it = dbg_keys.begin(); it != dbg_keys.end(); ++it) {
         if (kDown & it->first) {
-            printf("Key '%s' was pressed\n", it->second.c_str());
-            return;
+            return it->second;
         }
     }
+    return NOP;
+}
+
+void onGameFinish(GameState state, int score) {
+    if (state == WON) {
+        cout << MSG_WIN;
+    } else {
+        cout << MSG_LOST;
+    }
+
+    printf(MSG_SCORE, score);
 }
 
 // Main program entrypoint
@@ -38,8 +57,11 @@ int main(int argc, char* argv[])
     //   take a look at the graphics/opengl set of examples, which uses EGL instead.
     consoleInit(NULL);
 
+    Game game(V_HEIGHT, V_WIDTH);
+    game.setSpeed(SPEED);
+
     // Other initialization goes here. As a demonstration, we print hello world.
-    printf("Hello World!\n");
+    //printf("Hello World!\n");
 
     // Main loop
     while (appletMainLoop())
@@ -54,11 +76,16 @@ int main(int argc, char* argv[])
         if (kDown & KEY_PLUS)
             break; // break in order to return to hbmenu
         
-        if (kDown > 0) {
-            debugButtonsState(kDown);
+        GameState gameState = game.getState();
+        if (gameState != PLAYING) {
+            onGameFinish(gameState, game.getScore());
+            continue;
         }
 
-        // Your code goes here
+        Direction d = decodeButtonDirection(kDown);
+        game.DrawTable();
+        game.setDirection(d);
+        game.Process();
 
         // Update the console, sending a new frame to the display
         consoleUpdate(NULL);
