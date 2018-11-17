@@ -100,7 +100,9 @@ void Game::Move() {
         snake_body[snake_size].index_i = 0;
         snake_body[snake_size].index_j = 0;
     }
-    //svcSleepThread(speed);
+#ifdef WITH_TIMER
+    svcSleepThread(speed);
+#endif
 }
 
 void Game::PutFood() {
