@@ -78,25 +78,24 @@ int main(int argc, char* argv[])
             break; // break in order to return to hbmenu
         
         if (gameOver == true) {
+            consoleUpdate(NULL);
             continue;
         }
 
         GameState gameState = game.getState();
-        if (gameState != PLAYING) {
+        if (gameState == PLAYING) {
+            Direction d = decodeButtonDirection(kDown);
+            game.RefreshPosition();
+            
+            if (d != NOP) {
+                game.setDirection(d);
+            }
+
+            game.Process();
+        } else {
             gameOver = true;
             onGameFinish(gameState, game.getScore());
-            continue;
         }
-
-        Direction d = decodeButtonDirection(kDown);
-        game.RefreshPosition();
-        
-        if (d != NOP) {
-            game.setDirection(d);
-        }
-
-        game.Process();
-
         // Update the console, sending a new frame to the display
         consoleUpdate(NULL);
     }
