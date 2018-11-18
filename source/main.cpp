@@ -102,8 +102,9 @@ int main(int argc, char* argv[])
     PrintConsole* con = consoleInit(NULL);
 
     // 1px offset workaround to prevent screen autoscroll
-    Game game(con->windowHeight - 2, con->windowWidth - 1);
+    Game game(con->windowHeight - 2, con->windowWidth - 1, con);
     game.setSpeed(SPEED);
+    game.Draw();
 
     // Other initialization goes here. As a demonstration, we print hello world.
     //printf("Hello World!\n");
@@ -133,7 +134,7 @@ int main(int argc, char* argv[])
         }
 
         Direction d = decodeButtonDirection(kDown);
-        game.DrawTable();
+        game.RefreshPosition();
         
         if (d != NOP) {
             game.setDirection(d);
