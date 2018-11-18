@@ -15,7 +15,7 @@
 // Speed in nanoseconds
 // 300 ms  -  300000000
 //   5 sec -  5000000000
-#define SPEED 300000000ULL
+#define SPEED 150000000ULL
 #define LEVEL 1
 
 // Messages
@@ -53,61 +53,16 @@ void onGameFinish(GameState state, int score) {
     printf(MSG_SCORE, score);
 }
 
-#ifdef TEST
-int main(int argc, char *argv[]) {
-    PrintConsole* con = consoleInit(NULL);
-    int y = con->windowHeight;
-    int x = con->windowWidth;   // 44?
-
-    for (int i = 0; i < y; i++) {
-        if (i == 0 || i == (y - 1)) {
-            for (int j = 0; j < x; j++) {
-                printf("X");
-            }
-            continue;
-        }
-        printf("Y\n");
-    }
-    //printf("Height: %d\nWidth: %d\n", con->windowHeight, con->windowWidth);
-
-    while (appletMainLoop())
-    {
-        // Scan all the inputs. This should be done once for each frame
-        hidScanInput();
-
-        // hidKeysDown returns information about which buttons have been
-        // just pressed in this frame compared to the previous one
-        u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
-
-        if (kDown & KEY_PLUS)
-            break; // break in order to return to hbmenu
-        
-        consoleUpdate(NULL);
-    }
-
-    consoleExit(NULL);
-    return 0;
-}
-#endif
-#ifndef TEST
 // Main program entrypoint
 int main(int argc, char* argv[])
 {
     bool gameOver = false;
-    // This example uses a text console, as a simple way to output text to the screen.
-    // If you want to write a software-rendered graphics application,
-    //   take a look at the graphics/simplegfx example, which uses the libnx gfx API instead.
-    // If on the other hand you want to write an OpenGL based application,
-    //   take a look at the graphics/opengl set of examples, which uses EGL instead.
     PrintConsole* con = consoleInit(NULL);
 
     // 1px offset workaround to prevent screen autoscroll
     Game game(con->windowHeight - 2, con->windowWidth - 1, con);
     game.setSpeed(SPEED);
     game.Draw();
-
-    // Other initialization goes here. As a demonstration, we print hello world.
-    //printf("Hello World!\n");
 
     // Main loop
     while (appletMainLoop())
@@ -150,4 +105,3 @@ int main(int argc, char* argv[])
     consoleExit(NULL);
     return 0;
 }
-#endif
