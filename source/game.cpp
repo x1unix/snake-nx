@@ -64,6 +64,7 @@ void Game::Draw() {
 	cout << score_msg;
 	SetConsoleCursorPosition(scorePos_y, scorePos_x);
 	cout << score << endl;
+    consoleUpdate(NULL);
 }
 
 void Game::RefreshPosition() {
@@ -73,6 +74,7 @@ void Game::RefreshPosition() {
 	}
 	SetConsoleCursorPosition(scorePos_y, scorePos_x);
 	cout << score << endl;
+    consoleUpdate(NULL);
 }
 
 void Game::Process() {
@@ -127,6 +129,8 @@ void Game::Move() {
 			snake_body[i].index_j = snake_body[i + 1].index_j;
 		}
 	}
+
+    consoleUpdate(NULL);
 #ifdef WITH_TIMER
     // Input control blocked by sleep.
     // Consider using async calls
