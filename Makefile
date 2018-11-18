@@ -9,6 +9,11 @@ endif
 TOPDIR ?= $(CURDIR)
 include $(DEVKITPRO)/libnx/switch_rules
 
+# APP INFO
+APP_TITLE 		:= "'Snake NX'"
+APP_AUTHOR 		:= "x1unix"
+APP_VERSION 	:= "1.0.1"
+
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
 # BUILD is the directory where object files & intermediate files will be placed
