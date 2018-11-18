@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <switch.h>
+#include <string>
 
-#define CHR_SNAKE '@'
-#define CHR_FOOD '*'
-#define CHR_FRAME '#'
-#define CHR_EMPTY ' '
+#define SNAKE '@'
+#define FOOD '*'
+#define FRAME '#'
 
 /////////////////////////////////////////////
 // Port of github.com/lowlevelftw/somecode //
@@ -19,22 +19,28 @@ struct Snake {
 
 class Game {
 private:
-    int height, width, max_size;
-    bool status, win;
-    int snake_size, food_x, food_y, snake_x, snake_y, score;
+    const short height, width;
+    PrintConsole* console;
+    bool defeated, win;
+    Direction eDirection;
+    short max_size;
+    std::string score_msg;
+    short snake_size, food_x, food_y, score, scorePos_x, scorePos_y;
+    short snake_x, snake_y;
     u64 speed;
-    Direction direction;
     Snake *snake_body;
-    bool inBoundsOf(int i, int j);
+    void SetConsoleCursorPosition(short x, short y);
 public:
-    Game(int vHeight, int vWidth);
+    Game(const short vHeight, const short vWidth, PrintConsole* con);
     ~Game();
-    GameState getState();
-    int getScore();
-    void DrawTable();
+    void Draw();
+	void RefreshPosition();
     void Process();
-    void Move();
-    void PutFood();
+	void Move();
+	void SetFoodPosition();
+	short getScore();
     void setSpeed(u64 s);
     void setDirection(Direction dir);
+    Direction getDirection();
+    GameState getState();
 };

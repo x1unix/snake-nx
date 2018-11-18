@@ -4,139 +4,183 @@
 #include <time.h>
 #include <switch.h>
 
+#define WITH_TIMER true
+
 using namespace std;
 
-Game::Game(int vHeight, int vWidth) {
-    height = vHeight;
-    width = vWidth;
-    status = false;
+Game::Game(const short vHeight, const short vWidth, PrintConsole* con) : height(vHeight), width(vWidth), console(con) {
+    defeated = false;
     win = false;
-    score = 0;
-    snake_x = vHeight / 2;
-    snake_y = vWidth / 2;
-    max_size = (vHeight - 2) * (vWidth - 2);
+    score_msg = "Your current score is: ";
     snake_size = 1;
+    score = 0;
+    scorePos_x = height;
+	scorePos_y = score_msg.length();
+    snake_x = height / 2;
+    snake_y = width / 2;
+    max_size = (vHeight - 2) * (vWidth - 2);
     snake_body = new Snake[max_size];
     snake_body[0].index_i = snake_x;
     snake_body[0].index_j = snake_y;
-    PutFood();
+    
+    srand(time(NULL));
+	food_x = rand() % (height - 3) + 3;
+	food_y = rand() % (width - 3) + 3;
+	while (food_x == snake_x && food_y == snake_y) {
+		food_x = rand() % (height - 3) + 3;
+		food_y = rand() % (width - 3) + 3;
+	}
 }
 
 Game::~Game() {
     delete[] snake_body;
 }
 
-void Game::DrawTable() {
-    consoleClear();
-    std::string frame;
-
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {           
-            if (!i || i == height - 1 || !j || j == width - 1) {
-                frame.append("#");
-            }
-            else if (i == food_x && j == food_y) {
-                frame.append("@");
-            }
-            else if (inBoundsOf(i, j)) {
-                frame.append("*");
-            }
-            else {
-                frame.append(" ");
-            }
-        }
-        frame.append("\n");
-    }
-
-    printf(frame.c_str());
-    printf("Your current score is: %d\n", score);
+// Polyfill over Windows Console API
+void Game::SetConsoleCursorPosition(short x, short y) {
+    // TODO: implement
+    console->cursorX = x;
+    console->cursorY = y;
 }
 
-void Game::setDirection(Direction dir) {
-    direction = dir;
+void Game::Draw() {
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			if (!i || i == height - 1 || !j || j == width - 1) {
+				cout << FRAME;
+			}
+			else if (i == food_x && j == food_y) {
+				cout << FOOD;
+			}
+			else if (i == snake_x && j == snake_y) {
+				cout << SNAKE;
+			}
+			else {
+				cout << " ";
+			}
+		}
+		cout << endl;
+	}
+	cout << score_msg;
+	SetConsoleCursorPosition(scorePos_y, scorePos_x);
+	cout << score << endl;
+    consoleUpdate(NULL);
+}
+
+void Game::RefreshPosition() {
+	for (int i = 0; i < snake_size; i++) {
+		SetConsoleCursorPosition(snake_body[i].index_j, snake_body[i].index_i);
+		cout << SNAKE;
+	}
+	SetConsoleCursorPosition(scorePos_y, scorePos_x);
+	cout << score << endl;
+    consoleUpdate(NULL);
 }
 
 void Game::Process() {
-    switch (direction) {
-    case UP:
-        snake_x--;
-        break;
-    case LEFT:
-        snake_y--;
-        break;
-    case DOWN:
-        snake_x++;
-        break;
-    case RIGHT:
-        snake_y++;
-        break;
+	switch (eDirection) {
+	case UP:
+		snake_x--;
+		break;
+	case LEFT:
+		snake_y--;
+		break;
+	case DOWN:
+		snake_x++;
+		break;
+	case RIGHT:
+		snake_y++;
+		break;
     default:
-        return;
-    }
-
-    Move();
+        break;
+	}
+	Move();
 }
 
 void Game::Move() {
-    snake_body[snake_size].index_i = snake_x;
-    snake_body[snake_size].index_j = snake_y;
-    if (!snake_x || snake_x == height - 1 || !snake_y || snake_y == width - 1) { // collision logic
-        status = true;
-    }
-    else if (snake_x == food_x && snake_y == food_y) {
-        snake_size++;
-        score++;
-        if (snake_size == max_size) {
-            win = true;
-            return;
-        }
-        PutFood();
-    }
-    else {
-        for (int index = 0; index < snake_size; index++) {
-            snake_body[index].index_i = snake_body[index + 1].index_i;
-            snake_body[index].index_j = snake_body[index + 1].index_j;
-        }
-        snake_body[snake_size].index_i = 0;
-        snake_body[snake_size].index_j = 0;
-    }
+	/*for (int i = 0; i < snake_size; i++) {   tail collision logic (if you try to reverse your move, you die). Optional.
+		if (snake_body[i].index_i == snake_x && snake_body[i].index_j == snake_y) {
+			defeated = true;
+			return;
+		}
+	}*/
+	snake_body[snake_size].index_i = snake_x;
+	snake_body[snake_size].index_j = snake_y;
+	if (!snake_x || snake_x == height - 1 || !snake_y || snake_y == width - 1) { // wall collision logic
+		defeated = true;
+	}
+	else if (snake_x == food_x && snake_y == food_y) { // grow
+		snake_size++;
+		score++;
+		if (snake_size == max_size) {
+			win = true;
+		}
+		else {
+			SetFoodPosition();
+		}
+	}
+	else { // simple move
+		SetConsoleCursorPosition(snake_y, snake_x);
+		cout << SNAKE;
+		SetConsoleCursorPosition(snake_body[0].index_j, snake_body[0].index_i);
+		cout << " ";
+		for (int i = 0; i < snake_size; i++) {
+			snake_body[i].index_i = snake_body[i + 1].index_i;
+			snake_body[i].index_j = snake_body[i + 1].index_j;
+		}
+	}
+
+    consoleUpdate(NULL);
 #ifdef WITH_TIMER
+    // Input control blocked by sleep.
+    // Consider using async calls
     svcSleepThread(speed);
 #endif
 }
 
-void Game::PutFood() {
-    srand(time(NULL));
-    food_x = rand() % (height - 2) + 2;
-    food_y = rand() % (width - 2) + 2;
+void Game::SetFoodPosition() {
+	srand(time(NULL));
+	food_x = rand() % (height - 3) + 3;
+	food_y = rand() % (width - 3) + 3;
+	int i = 0;
+	while (i < snake_size) {
+		if ((food_x == snake_body[i].index_i && food_y == snake_body[i].index_j) || (!food_x || food_x == height - 1 || !food_y || food_y == width - 1)) {
+			food_x = rand() % (height - 3) + 3;
+			food_y = rand() % (width - 3) + 3;
+			i = 0;
+		}
+		else {
+			i++;
+		}
+	}
+	SetConsoleCursorPosition(food_y, food_x);
+	cout << FOOD;
 }
 
-bool Game::inBoundsOf(int i, int j) {
-    for (int k = 0; k < snake_size; k++) {
-        if (i == snake_body[k].index_i && j == snake_body[k].index_j) {
-            return true;
-        }
-    }
-    return false;
-}
-
-GameState Game::getState() {
-    if (!status && !win) {
-        return PLAYING;
-    }
-
-    if (status && !win) {
-        return LOST;
-    }
-
-    return WON;
-}
-
-int Game::getScore() {
-    return score;
+short Game::getScore() {
+	return score;
 }
 
 void Game::setSpeed(u64 s) {
-    speed = s;
+	speed = s;
 }
 
+Direction Game::getDirection() {
+	return eDirection;
+}
+
+void Game::setDirection(Direction dir) {
+    eDirection = dir;
+}
+
+GameState Game::getState() {
+    if (defeated) {
+        return LOST;
+    }
+
+    if (win) {
+        return WON;
+    }
+
+    return PLAYING;
+}
